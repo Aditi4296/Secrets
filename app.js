@@ -39,7 +39,8 @@ mongoose.connect("mongodb://localhost:27017/userDB", {useNewUrlParser: true});
 const userSchema = new mongoose.Schema({
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: String
 });
 
 //plugins should be when there is mongoose object and not simple javascript object
@@ -108,53 +109,59 @@ app.get("/register",(req,res)=>{
 });
 
 
-app.get("/secrets",(req,res)=>{
-     if(req.isAuthenticated()){
-        res.render("secrets");
-     }else{
-        res.redirect("/login");
-     }
-});
+// app.get("/secrets",(req,res)=>{
+//      if(req.isAuthenticated()){
+//         res.render("secrets");
+//      }else{
+//         res.redirect("/login");
+//      }
+// });
 
-// app.get("/secrets", function(req, res){
-//     User.find({"secret": {$ne: null}}, function(err, foundUsers){
-//       if (err){
-//         console.log(err);
-//       } else {
-//         if (foundUsers) {
-//           res.render("secrets", {usersWithSecrets: foundUsers});
-//         }
-//       }
-//     });
-//   });
+app.get("/secrets", function(req, res){
+    User.find({"secret": {$ne: null}})
+    .then(function(foundUsers){
+        if (foundUsers) {
+          res.render("secrets", {usersWithSecrets: foundUsers});
+        }
+      })
+      .catch(function(err){
+            console.log(err);
+        });
+    });
+
+    
+  app.get("/submit", function(req, res){
+    if (req.isAuthenticated()){
+      res.render("submit");
+    } else {
+      res.redirect("/login");
+    }
+  });
   
-//   app.get("/submit", function(req, res){
-//     if (req.isAuthenticated()){
-//       res.render("submit");
-//     } else {
-//       res.redirect("/login");
-//     }
-//   });
+  app.post("/submit", function(req, res){
+    const submittedSecret = req.body.secret;
   
-//   app.post("/submit", function(req, res){
-//     const submittedSecret = req.body.secret;
+  //Once the user is authenticated and their session gets saved, their user details are saved to req.user.
+    // console.log(req.user.id);
   
-//   //Once the user is authenticated and their session gets saved, their user details are saved to req.user.
-//     // console.log(req.user.id);
-  
-//     User.findById(req.user.id, function(err, foundUser){
-//       if (err) {
-//         console.log(err);
-//       } else {
-//         if (foundUser) {
-//           foundUser.secret = submittedSecret;
-//           foundUser.save(function(){
-//             res.redirect("/secrets");
-//           });
-//         }
-//       }
-//     });
-//   });
+    User.findById(req.user.id)
+    .then(function(foundUser){
+      
+        if (foundUser) {
+          foundUser.secret = submittedSecret;
+          foundUser.save()
+          .then((secret)=>{
+            res.redirect("/secrets");
+          })
+          .catch(function(err){
+            console.log(err);
+        })
+    }
+      })
+      .catch(function(err){
+        console.log(err);
+    });
+    });
 
 app.get("/logout",(req,res)=>{
     req.logout(function(err) {
