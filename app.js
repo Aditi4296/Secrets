@@ -117,11 +117,12 @@ app.get("/register",(req,res)=>{
 //      }
 // });
 
-app.get("/secrets", function(req, res){
+app.get("/src/App.js", function(req, res){
     User.find({"secret": {$ne: null}})
     .then(function(foundUsers){
         if (foundUsers) {
-          res.render("secrets", {usersWithSecrets: foundUsers});
+        //   res.render("secrets", {usersWithSecrets: foundUsers});
+        res.render("src/App.js")
         }
       })
       .catch(function(err){
@@ -151,7 +152,7 @@ app.get("/secrets", function(req, res){
           foundUser.secret = submittedSecret;
           foundUser.save()
           .then((secret)=>{
-            res.redirect("/secrets");
+            res.redirect("/src/App.js");
           })
           .catch(function(err){
             console.log(err);
@@ -194,7 +195,7 @@ app.post("/register",(req,res)=>{
             res.redirect("/register");
         }else{
             passport.authenticate("local")(req,res,function(){
-                res.redirect("/secrets");
+                res.redirect("/src/App.js");
             })
         }
     })
@@ -251,7 +252,7 @@ app.post("/login",(req,res)=>{
             console.log(err);
         }else{
             passport.authenticate("local")(req,res,function(){
-            res.redirect("/secrets");
+            res.redirect("/src/App.js");
         })
     }})
 });
